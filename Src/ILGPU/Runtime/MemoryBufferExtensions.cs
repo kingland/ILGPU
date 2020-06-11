@@ -1070,4 +1070,89 @@ namespace ILGPU.Runtime
 
         #endregion
     }
+
+    /// <summary>
+    /// Extension methods for the allocation of memory buffers.
+    /// </summary>
+    public static class MemoryBufferExtensions
+    {
+        /// <summary>
+        /// Allocates a 1D memory buffer with the given content on the associated
+        /// accelerator.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="accelerator">The current accelerator.</param>
+        /// <param name="data">The initial data array.</param>
+        /// <returns>The allocated memory buffer.</returns>
+        public static MemoryBuffer<T> Allocate<T>(
+            this Accelerator accelerator,
+            T[] data)
+            where T : unmanaged
+        {
+            if (data is null)
+                throw new ArgumentNullException(nameof(data));
+            if (data.Length < 1)
+                throw new ArgumentOutOfRangeException(nameof(data));
+            var buffer = accelerator.Allocate<T>(data.Length);
+            buffer.CopyFrom(data, 0, 0, data.Length);
+            return buffer;
+        }
+
+        /// <summary>
+        /// Allocates a 2D memory buffer with the given content on the associated
+        /// accelerator.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="accelerator">The current accelerator.</param>
+        /// <param name="data">The initial data array.</param>
+        /// <returns>The allocated memory buffer.</returns>
+        [SuppressMessage(
+            "Microsoft.Performance",
+            "CA1814: PreferJaggedArraysOverMultidimensional",
+            Target = "data")]
+        public static MemoryBuffer2D<T> Allocate<T>(
+            this Accelerator accelerator,
+            T[,] data)
+            where T : unmanaged
+        {
+            if (data is null)
+                throw new ArgumentNullException(nameof(data));
+            if (data.Length < 1)
+                throw new ArgumentOutOfRangeException(nameof(data));
+            var buffer = accelerator.Allocate<T>(
+                data.GetLength(0),
+                data.GetLength(1));
+            buffer.CopyFrom(data, Index2.Zero, Index2.Zero, buffer.Extent);
+            return buffer;
+        }
+
+        /// <summary>
+        /// Allocates a 3D memory buffer with the given content on the associated
+        /// accelerator.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="accelerator">The current accelerator.</param>
+        /// <param name="data">The initial data array.</param>
+        /// <returns>The allocated memory buffer.</returns>
+        [SuppressMessage(
+            "Microsoft.Performance",
+            "CA1814: PreferJaggedArraysOverMultidimensional",
+            Target = "data")]
+        public static MemoryBuffer3D<T> Allocate<T>(
+            this Accelerator accelerator,
+            T[,,] data)
+            where T : unmanaged
+        {
+            if (data is null)
+                throw new ArgumentNullException(nameof(data));
+            if (data.Length < 1)
+                throw new ArgumentOutOfRangeException(nameof(data));
+            var buffer = accelerator.Allocate<T>(
+                data.GetLength(0),
+                data.GetLength(1),
+                data.GetLength(2));
+            buffer.CopyFrom(data, Index3.Zero, Index3.Zero, buffer.Extent);
+            return buffer;
+        }
+    }
 }
